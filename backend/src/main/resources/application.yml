@@ -18,15 +18,29 @@ spring:
       client:
         registration:
           google:
-            client-id: YOUR_GOOGLE_CLIENT_ID
-            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            client-id: ${GOOGLE_CLIENT_ID:disabled-client}
+            client-secret: ${GOOGLE_CLIENT_SECRET:disabled-secret}
             scope:
               - email
               - profile
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
 
 app:
   frontend:
     url: http://localhost:5173
+  mail:
+    from: ${APP_MAIL_FROM:${MAIL_USERNAME:noreply@smartcampus.local}}
+    require-delivery: ${APP_MAIL_REQUIRE_DELIVERY:false}
   jwt:
     secret: your_super_secret_key_123456789012345678901234567890
     expiration: 86400000
