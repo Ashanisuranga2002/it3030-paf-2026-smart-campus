@@ -1,6 +1,7 @@
 package com.groupxx.smartcampus.notification.service;
 
 import com.groupxx.smartcampus.auth.entity.User;
+import com.groupxx.smartcampus.auth.entity.RoleType;
 import com.groupxx.smartcampus.auth.repository.UserRepository;
 import com.groupxx.smartcampus.common.exception.ForbiddenException;
 import com.groupxx.smartcampus.common.exception.ResourceNotFoundException;
@@ -42,6 +43,32 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+    }
+
+    public void createNotificationForRole(RoleType role,
+                                          NotificationType type,
+                                          String title,
+                                          String message,
+                                          String referenceType,
+                                          Long referenceId) {
+        List<User> users = userRepository.findAllByRole(role);
+        if (users.isEmpty()) {
+            return;
+        }
+
+        List<Notification> notifications = users.stream()
+                .map(user -> Notification.builder()
+                        .user(user)
+                        .type(type)
+                        .title(title)
+                        .message(message)
+                        .referenceType(referenceType)
+                        .referenceId(referenceId)
+                        .isRead(false)
+                        .build())
+                .toList();
+
+        notificationRepository.saveAll(notifications);
     }
 
     public List<NotificationResponse> getMyNotifications(String email) {

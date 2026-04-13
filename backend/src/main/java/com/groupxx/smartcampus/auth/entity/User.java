@@ -24,6 +24,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    private String passwordHash;
+
     private String profilePicture;
 
     @Enumerated(EnumType.STRING)
