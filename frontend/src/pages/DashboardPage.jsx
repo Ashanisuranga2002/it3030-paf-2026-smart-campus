@@ -72,6 +72,14 @@ function DashboardPage() {
 
   const quickActions = [
     {
+      to: '/resources',
+      label: 'Resource Management',
+      desc: 'Browse facilities and view campus resource details.',
+      emoji: '🏢',
+      theme: 'quick-tile-theme-blue',
+      isLink: true,
+    },
+    {
       to: '/dashboard',
       label: 'Refresh Dashboard',
       desc: 'Reload your command center and recalculate live metrics.',
@@ -93,6 +101,13 @@ function DashboardPage() {
       desc: 'Open role-based user administration and account controls.',
       emoji: '👥',
       theme: 'quick-tile-theme-amber quick-tile-admin',
+      isLink: true,
+    }, {
+      to: '/admin/resources',
+      label: 'Manage Resources',
+      desc: 'Create, update, and remove campus resources.',
+      emoji: '🏢',
+      theme: 'quick-tile-theme-cyan quick-tile-admin',
       isLink: true,
     }] : []),
     {
