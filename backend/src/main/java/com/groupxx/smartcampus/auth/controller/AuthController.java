@@ -27,10 +27,10 @@ public class AuthController {
     private final AuthService authService;
     private final UserAdminService userAdminService;
 
-    @Value("${GOOGLE_CLIENT_ID:}")
+    @Value("${spring.security.oauth2.client.registration.google.client-id:}")
     private String googleClientId;
 
-    @Value("${GOOGLE_CLIENT_SECRET:}")
+    @Value("${spring.security.oauth2.client.registration.google.client-secret:}")
     private String googleClientSecret;
 
     @GetMapping("/login-url")

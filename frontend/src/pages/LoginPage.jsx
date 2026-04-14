@@ -4,6 +4,14 @@ import LoginButton from '../components/auth/LoginButton';
 import { useAuth } from '../context/AuthContext';
 import { loginWithEmailPassword } from '../services/authService';
 
+const CAMPUS_IMAGE = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1200&auto=format&fit=crop&q=80';
+
+const features = [
+  { icon: '🏫', text: 'Access campus resources and facility details' },
+  { icon: '🎓', text: 'Manage club memberships & student activities' },
+  { icon: '🔔', text: 'Real-time notifications & event alerts' },
+];
+
 function LoginPage() {
   const navigate = useNavigate();
   const { loginWithToken } = useAuth();
