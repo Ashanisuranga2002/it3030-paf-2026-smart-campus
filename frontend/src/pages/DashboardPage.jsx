@@ -69,16 +69,55 @@ function DashboardPage() {
     }
   ];
 
-  const handleParallaxMove = (event) => {
-    const { left, top, width, height } = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - left) / width - 0.5) * 14;
-    const y = ((event.clientY - top) / height - 0.5) * 14;
-    setParallax({ x, y });
-  };
-
-  const resetParallax = () => {
-    setParallax({ x: 0, y: 0 });
-  };
+  const quickActions = [
+    {
+      to: '/resources',
+      label: 'Resource Management',
+      desc: 'Browse facilities and view campus resource details.',
+      emoji: '🏢',
+      theme: 'quick-tile-theme-blue',
+      isLink: true,
+    },
+    {
+      to: '/dashboard',
+      label: 'Refresh Dashboard',
+      desc: 'Reload your command center and recalculate live metrics.',
+      emoji: '🔄',
+      theme: 'quick-tile-theme-blue',
+      isLink: true,
+    },
+    {
+      onClick: loadDashboardData,
+      label: 'Sync Activity',
+      desc: 'Pull latest alerts and timeline items from the server.',
+      emoji: '⚡',
+      theme: 'quick-tile-theme-cyan',
+      isLink: false,
+    },
+    ...(user?.role === 'ADMIN' ? [{
+      to: '/admin/users',
+      label: 'Manage Users',
+      desc: 'Open role-based user administration and account controls.',
+      emoji: '👥',
+      theme: 'quick-tile-theme-amber quick-tile-admin',
+      isLink: true,
+    }, {
+      to: '/admin/resources',
+      label: 'Manage Resources',
+      desc: 'Create, update, and remove campus resources.',
+      emoji: '🏢',
+      theme: 'quick-tile-theme-cyan quick-tile-admin',
+      isLink: true,
+    }] : []),
+    {
+      onClick: logout,
+      label: 'Secure Logout',
+      desc: 'End your current session and return to the login portal.',
+      emoji: '🔒',
+      theme: 'quick-tile-danger quick-tile-theme-rose',
+      isLink: false,
+    },
+  ];
 
   return (
     <div

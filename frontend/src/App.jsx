@@ -3,6 +3,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import ResourcesPage from './pages/ResourcesPage';
+import AdminResourcesPage from './pages/AdminResourcesPage';
 import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -23,10 +25,28 @@ function App() {
       />
 
       <Route
+        path="/resources"
+        element={
+          <ProtectedRoute>
+            <ResourcesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/users"
         element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminUsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/resources"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminResourcesPage />
           </ProtectedRoute>
         }
       />

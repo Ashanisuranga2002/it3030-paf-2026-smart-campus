@@ -20,10 +20,10 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-        @Value("${GOOGLE_CLIENT_ID:}")
+        @Value("${spring.security.oauth2.client.registration.google.client-id:}")
         private String googleClientId;
 
-        @Value("${GOOGLE_CLIENT_SECRET:}")
+        @Value("${spring.security.oauth2.client.registration.google.client-secret:}")
         private String googleClientSecret;
 
     @Bean
@@ -31,7 +31,9 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session.sessionCreationPolicy(
+                isGoogleOAuthEnabled() ? SessionCreationPolicy.IF_REQUIRED : SessionCreationPolicy.STATELESS
+            ))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
