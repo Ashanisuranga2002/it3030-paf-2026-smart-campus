@@ -4,13 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getNotifications, getUnreadCount } from '../services/notificationService';
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1400&auto=format&fit=crop&q=80';
-
 function DashboardPage() {
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -48,25 +47,25 @@ function DashboardPage() {
       label: 'Total Alerts',
       value: notifications.length,
       hint: 'All-time notification records',
-      icon: '🔔'
+      icon: 'AL'
     },
     {
       label: 'Unread',
       value: unreadCount,
       hint: 'Need your attention now',
-      icon: '📬'
+      icon: 'UR'
     },
     {
-      label: 'Activity (7d)',
+      label: 'Activity (7 days)',
       value: weeklyActivityCount,
       hint: 'Recent campus system events',
-      icon: '📈'
+      icon: 'WK'
     },
     {
       label: 'Access Level',
       value: user?.role || 'N/A',
       hint: 'Current permission profile',
-      icon: '🛡️'
+      icon: 'RL'
     }
   ];
 
@@ -121,41 +120,32 @@ function DashboardPage() {
   ];
 
   return (
-    <div className="page-wrapper">
+    <div
+      style={{ '--px': `${parallax.x}px`, '--py': `${parallax.y}px` }}
+      onMouseMove={handleParallaxMove}
+      onMouseLeave={resetParallax}
+    >
       <Navbar />
 
       <div className="page-container dashboard-page">
-        {/* ── Hero Section ── */}
-        <section className="dashboard-hero">
-          <img
-            src={HERO_IMAGE}
-            alt="University campus aerial"
-            className="dashboard-hero__bg"
-          />
-          <div className="dashboard-hero__overlay" />
-
-          <div className="dashboard-hero__content">
+        <section className="card dashboard-hero">
+          <div>
             <p className="dashboard-kicker">Overview</p>
-            <h1>Welcome back, {user?.name} 👋</h1>
+            <h1>Welcome back, {user?.name}</h1>
             <p className="dashboard-subtitle">
               Your command center for account visibility, activity tracking, and quick actions.
             </p>
           </div>
-
           <div className="dashboard-hero-meta">
             <p><strong>Email:</strong> {user?.email}</p>
             <p><strong>Role:</strong> {user?.role}</p>
           </div>
         </section>
 
-        {/* ── Stat Cards ── */}
         <section className="dashboard-grid stats-grid" aria-label="Stats">
-          {statCards.map((item, i) => (
-            <article key={item.label} className="stat-card">
-              <div className="stat-card-stripe" />
-              <span className="stat-icon-badge" role="img" aria-label={item.label}>
-                {item.icon}
-              </span>
+          {statCards.map((item) => (
+            <article key={item.label} className="card stat-card">
+              <span className="stat-icon-badge">{item.icon}</span>
               <p className="stat-label">{item.label}</p>
               <h3 className="stat-value">{item.value}</h3>
               <p className="stat-hint">{item.hint}</p>
@@ -163,56 +153,55 @@ function DashboardPage() {
           ))}
         </section>
 
-        {/* ── Content Grid ── */}
         <section className="dashboard-grid content-grid">
-          {/* Quick Actions */}
-          <article className="quick-actions-card">
+          <article className="card quick-actions-card">
             <h2>Quick Actions</h2>
             <p className="muted-text">Jump to frequent workflows with one click.</p>
 
             <div className="quick-actions-grid">
-              {quickActions.map((action) =>
-                action.isLink ? (
-                  <Link
-                    key={action.label}
-                    to={action.to}
-                    className={`quick-tile ${action.theme}`}
-                  >
-                    <span className="quick-tile-emoji">{action.emoji}</span>
-                    <h3>{action.label}</h3>
-                    <p>{action.desc}</p>
-                  </Link>
-                ) : (
-                  <button
-                    key={action.label}
-                    className={`quick-tile quick-tile-button ${action.theme}`}
-                    onClick={action.onClick}
-                  >
-                    <span className="quick-tile-emoji">{action.emoji}</span>
-                    <h3>{action.label}</h3>
-                    <p>{action.desc}</p>
-                  </button>
-                )
+              <Link to="/dashboard" className="quick-tile quick-tile-theme-blue">
+                <h3>Refresh Dashboard</h3>
+                <p>Reload your command center and recalculate live metrics.</p>
+              </Link>
+
+              <button
+                className="quick-tile quick-tile-button quick-tile-theme-cyan"
+                onClick={loadDashboardData}
+              >
+                <h3>Sync Activity</h3>
+                <p>Pull latest alerts and timeline items from the server.</p>
+              </button>
+
+              {user?.role === 'ADMIN' && (
+                <Link to="/admin/users" className="quick-tile quick-tile-admin quick-tile-theme-amber">
+                  <h3>Manage Users</h3>
+                  <p>Open role-based user administration and account controls.</p>
+                </Link>
               )}
+
+              <button
+                className="quick-tile quick-tile-danger quick-tile-button quick-tile-theme-rose"
+                onClick={logout}
+              >
+                <h3>Secure Logout</h3>
+                <p>End your current session and return to the login portal.</p>
+              </button>
             </div>
           </article>
 
-          {/* Activity Timeline */}
-          <article className="timeline-card">
+          <article className="card timeline-card">
             <h2>Activity Timeline</h2>
             <p className="muted-text">Latest system events linked to your account.</p>
 
             {loading ? (
-              <p className="muted-text" style={{ marginTop: 16 }}>Loading timeline…</p>
+              <p className="muted-text">Loading timeline...</p>
             ) : recentNotifications.length === 0 ? (
-              <p className="muted-text" style={{ marginTop: 16 }}>No activity yet. New events will appear here.</p>
+              <p className="muted-text">No activity yet. New events will appear here.</p>
             ) : (
               <div className="timeline-list">
                 {recentNotifications.map((item) => (
                   <div key={item.id} className={`timeline-item ${item.isRead ? 'read' : 'unread'}`}>
-                    <div className="timeline-dot-wrap">
-                      <div className="timeline-dot" />
-                    </div>
+                    <div className="timeline-dot" />
                     <div>
                       <h4>{item.title}</h4>
                       <p>{item.message}</p>

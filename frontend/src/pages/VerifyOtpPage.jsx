@@ -35,33 +35,26 @@ function VerifyOtpPage() {
   };
 
   return (
-    <div className="otp-page-bg">
-      <div className="otp-card">
-        <div className="otp-icon-circle">🔐</div>
+    <div className="center-screen">
+      <div className="card auth-card">
         <h1>Two-Step Verification</h1>
-        <p>
-          We sent a 6-digit code to your registered email.<br />
-          Enter it below to continue.
-        </p>
+        <p>Enter the 6-digit verification code.</p>
 
         <form className="otp-form" onSubmit={handleVerify}>
           <input
-            id="otp-code"
             className="otp-input"
             type="text"
-            inputMode="numeric"
             maxLength={6}
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             placeholder="123456"
             required
-            autoComplete="one-time-code"
           />
 
           {error ? <p className="error-text">{error}</p> : null}
 
           <button className="primary-btn" type="submit" disabled={loading}>
-            {loading ? 'Verifying…' : 'Verify & Continue →'}
+            {loading ? 'Verifying...' : 'Verify and Continue'}
           </button>
         </form>
       </div>
