@@ -23,19 +23,12 @@ function Navbar() {
     loadUnread();
   }, []);
 
-  const initials = user?.name
-    ? user.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
-
   return (
     <nav className="navbar">
-      {/* Logo */}
-      <Link to="/dashboard" className="navbar-logo" style={{ textDecoration: 'none' }}>
-        <div className="navbar-logo-icon">🏛️</div>
+      <div>
         <h2>Smart Campus</h2>
-      </Link>
+      </div>
 
-      {/* Right controls */}
       <div className="navbar-right">
         <NotificationBell
           unreadCount={unreadCount}
@@ -43,10 +36,8 @@ function Navbar() {
         />
 
         <div className="user-box">
-          {user?.profilePicture ? (
+          {user?.profilePicture && (
             <img src={user.profilePicture} alt={user.name} className="avatar" />
-          ) : (
-            <div className="avatar-placeholder" aria-hidden="true">{initials}</div>
           )}
           <div>
             <strong>{user?.name}</strong>
@@ -55,9 +46,7 @@ function Navbar() {
         </div>
 
         {user?.role === 'ADMIN' && (
-          <Link className="secondary-btn nav-link-btn" to="/admin/users">
-            Manage Users
-          </Link>
+          <Link className="secondary-btn nav-link-btn" to="/admin/users">Manage Users</Link>
         )}
 
         <button className="secondary-btn" onClick={logout}>Logout</button>
