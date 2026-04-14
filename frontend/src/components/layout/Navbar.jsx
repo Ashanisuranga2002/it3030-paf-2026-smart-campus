@@ -54,10 +54,19 @@ function Navbar() {
           </div>
         </div>
 
+        <Link className="secondary-btn nav-link-btn" to="/resources">
+          Resources
+        </Link>
+
         {user?.role === 'ADMIN' && (
-          <Link className="secondary-btn nav-link-btn" to="/admin/users">
-            Manage Users
-          </Link>
+          <>
+            <Link className="secondary-btn nav-link-btn" to="/admin/resources">
+              Manage Resources
+            </Link>
+            <Link className="secondary-btn nav-link-btn" to="/admin/users">
+              Manage Users
+            </Link>
+          </>
         )}
 
         <button className="secondary-btn" onClick={logout}>Logout</button>
