@@ -13,8 +13,6 @@ import com.groupxx.smartcampus.booking.repository.BookingRepository;
 import com.groupxx.smartcampus.common.exception.BadRequestException;
 import com.groupxx.smartcampus.common.exception.ForbiddenException;
 import com.groupxx.smartcampus.common.exception.ResourceNotFoundException;
-import com.groupxx.smartcampus.notification.entity.NotificationType;
-import com.groupxx.smartcampus.notification.service.NotificationService;
 import com.groupxx.smartcampus.resource.entity.CampusResource;
 import com.groupxx.smartcampus.resource.entity.ResourceStatus;
 import com.groupxx.smartcampus.resource.repository.CampusResourceRepository;
@@ -23,28 +21,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BookingService {
 
-    private static final List<BookingStatus> CONFLICTING_STATUSES = List.of(
-            BookingStatus.PENDING,
-            BookingStatus.APPROVED
+    private static final List<BookingStatus> APPROVED_STATUSES = List.of(
+        BookingStatus.APPROVED
+    );
+
+    private static final List<BookingStatus> RESERVED_STATUSES = List.of(
+            BookingStatus.APPROVED,
+            BookingStatus.REMOVAL_REQUEST
     );
 
     private final BookingRepository bookingRepository;
     private final CampusResourceRepository campusResourceRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
 
     public BookingService(BookingRepository bookingRepository,
                           CampusResourceRepository campusResourceRepository,
-                          UserRepository userRepository,
-                          NotificationService notificationService) {
+                          UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
         this.campusResourceRepository = campusResourceRepository;
         this.userRepository = userRepository;
-        this.notificationService = notificationService;
     }
 
     public List<BookingResponse> getMyBookings(String email) {
@@ -55,6 +55,20 @@ public class BookingService {
 
     public List<BookingResponse> getAllBookings() {
         return bookingRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<BookingResponse> getBookingsByResource(Long resourceId) {
+        getResourceEntityById(resourceId);
+
+        return bookingRepository
+                .findByResourceIdAndStatusInAndEndTimeGreaterThanEqualOrderByStartTimeAsc(
+                        Objects.requireNonNull(resourceId, "resourceId"),
+                        APPROVED_STATUSES,
+                        LocalDateTime.now()
+                )
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -74,7 +88,6 @@ public class BookingService {
         CampusResource resource = getActiveResourceById(request.getResourceId());
         validateBookingWindow(request.getStartTime(), request.getEndTime());
         validateResourceCapacity(resource, request.getAttendeesCount());
-        ensureNoConflict(resource.getId(), null, request.getStartTime(), request.getEndTime());
 
         Booking booking = new Booking();
         booking.setUser(user);
@@ -84,6 +97,7 @@ public class BookingService {
         booking.setEndTime(request.getEndTime());
         booking.setAttendeesCount(request.getAttendeesCount());
         booking.setStatus(BookingStatus.PENDING);
+        booking.setRemovalReason(null);
 
         return toResponse(bookingRepository.save(booking));
     }
@@ -94,18 +108,33 @@ public class BookingService {
         Booking booking = getBookingEntityById(bookingId);
         ensureOwner(booking, user.getEmail());
 
-        CampusResource resource = getActiveResourceById(request.getResourceId());
-        validateBookingWindow(request.getStartTime(), request.getEndTime());
-        validateResourceCapacity(resource, request.getAttendeesCount());
-        ensureNoConflict(resource.getId(), booking.getId(), request.getStartTime(), request.getEndTime());
+        if (request.getStatus() == BookingStatus.REMOVAL_REQUEST) {
+            if (booking.getStatus() != BookingStatus.APPROVED) {
+                throw new BadRequestException("Only approved bookings can be marked for removal");
+            }
 
-        booking.setResource(resource);
-        booking.setPurpose(request.getPurpose().trim());
-        booking.setStartTime(request.getStartTime());
-        booking.setEndTime(request.getEndTime());
-        booking.setAttendeesCount(request.getAttendeesCount());
-        booking.setStatus(BookingStatus.PENDING);
-        booking.setRejectionReason(null);
+            String removalReason = normalizeOptional(request.getRemovalReason());
+            if (removalReason == null) {
+                throw new BadRequestException("Removal reason is required when requesting removal");
+            }
+
+            booking.setStatus(BookingStatus.REMOVAL_REQUEST);
+            booking.setRemovalReason(removalReason);
+            booking.setRejectionReason(null);
+        } else {
+            CampusResource resource = getActiveResourceById(request.getResourceId());
+            validateBookingWindow(request.getStartTime(), request.getEndTime());
+            validateResourceCapacity(resource, request.getAttendeesCount());
+
+            booking.setResource(resource);
+            booking.setPurpose(request.getPurpose().trim());
+            booking.setStartTime(request.getStartTime());
+            booking.setEndTime(request.getEndTime());
+            booking.setAttendeesCount(request.getAttendeesCount());
+            booking.setStatus(BookingStatus.PENDING);
+            booking.setRejectionReason(null);
+            booking.setRemovalReason(null);
+        }
 
         return toResponse(bookingRepository.save(booking));
     }
@@ -114,8 +143,14 @@ public class BookingService {
     public void deleteBooking(String email, Long bookingId) {
         User user = getUserByEmail(email);
         Booking booking = getBookingEntityById(bookingId);
-        ensureOwner(booking, user.getEmail());
-        bookingRepository.delete(booking);
+        boolean isAdmin = user.getRole() == RoleType.ADMIN;
+        if (!isAdmin) {
+            ensureOwner(booking, user.getEmail());
+            if (booking.getStatus() != BookingStatus.PENDING) {
+                throw new BadRequestException("Only pending bookings can be deleted");
+            }
+        }
+        bookingRepository.delete(Objects.requireNonNull(booking, "booking"));
     }
 
     @Transactional
@@ -127,34 +162,32 @@ public class BookingService {
 
         Booking booking = getBookingEntityById(bookingId);
 
-        if (request.getStatus() == BookingStatus.APPROVED) {
-            booking.setStatus(BookingStatus.APPROVED);
-            booking.setRejectionReason(null);
-            notificationService.createNotification(
-                    booking.getUser().getEmail(),
-                    NotificationType.BOOKING_APPROVED,
-                    "Booking approved",
-                    "Your booking for " + booking.getResource().getName() + " has been approved.",
-                    "BOOKING",
-                    booking.getId()
-            );
-        } else if (request.getStatus() == BookingStatus.REJECTED) {
-            String rejectionReason = normalizeOptional(request.getRejectionReason());
-            if (rejectionReason == null) {
-                throw new BadRequestException("Rejection reason is required when rejecting a booking");
+        switch (request.getStatus()) {
+            case APPROVED -> {
+                validateBookingWindow(booking.getStartTime(), booking.getEndTime());
+                validateResourceCapacity(booking.getResource(), booking.getAttendeesCount());
+                ensureNoConflict(
+                        booking.getResource().getId(),
+                        booking.getId(),
+                        booking.getStartTime(),
+                        booking.getEndTime(),
+                        RESERVED_STATUSES
+                );
+                booking.setStatus(BookingStatus.APPROVED);
+                booking.setRejectionReason(null);
+                booking.setRemovalReason(null);
             }
-            booking.setStatus(BookingStatus.REJECTED);
-            booking.setRejectionReason(rejectionReason);
-            notificationService.createNotification(
-                    booking.getUser().getEmail(),
-                    NotificationType.BOOKING_REJECTED,
-                    "Booking rejected",
-                    "Your booking for " + booking.getResource().getName() + " was rejected: " + rejectionReason,
-                    "BOOKING",
-                    booking.getId()
-            );
-        } else {
-            throw new BadRequestException("Bookings can only be approved or rejected");
+            case REJECTED -> {
+                String rejectionReason = normalizeOptional(request.getRejectionReason());
+                if (rejectionReason == null) {
+                    throw new BadRequestException("Rejection reason is required when rejecting a booking");
+                }
+                booking.setStatus(BookingStatus.REJECTED);
+                booking.setRejectionReason(rejectionReason);
+                booking.setRemovalReason(null);
+            }
+            case REMOVAL_REQUEST -> throw new BadRequestException("Removal requests are submitted by the booking owner");
+            default -> throw new BadRequestException("Bookings can only be approved, rejected, or marked for removal");
         }
 
         return toResponse(bookingRepository.save(booking));
@@ -166,12 +199,12 @@ public class BookingService {
     }
 
     private Booking getBookingEntityById(Long bookingId) {
-        return bookingRepository.findById(bookingId)
+        return bookingRepository.findById(Objects.requireNonNull(bookingId, "bookingId"))
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
     }
 
     private CampusResource getActiveResourceById(Long resourceId) {
-        CampusResource resource = campusResourceRepository.findById(resourceId)
+        CampusResource resource = campusResourceRepository.findById(Objects.requireNonNull(resourceId, "resourceId"))
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
         if (resource.getStatus() != ResourceStatus.ACTIVE) {
@@ -179,6 +212,11 @@ public class BookingService {
         }
 
         return resource;
+    }
+
+    private CampusResource getResourceEntityById(Long resourceId) {
+        return campusResourceRepository.findById(Objects.requireNonNull(resourceId, "resourceId"))
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
     }
 
     private void validateBookingWindow(LocalDateTime startTime, LocalDateTime endTime) {
@@ -201,11 +239,15 @@ public class BookingService {
         }
     }
 
-    private void ensureNoConflict(Long resourceId, Long bookingId, LocalDateTime startTime, LocalDateTime endTime) {
+        private void ensureNoConflict(Long resourceId,
+                      Long bookingId,
+                      LocalDateTime startTime,
+                      LocalDateTime endTime,
+                      List<BookingStatus> statuses) {
         boolean hasConflict = bookingRepository
                 .findByResourceIdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
                         resourceId,
-                        CONFLICTING_STATUSES,
+                statuses,
                         endTime,
                         startTime
                 )
@@ -251,6 +293,7 @@ public class BookingService {
         response.setAttendeesCount(booking.getAttendeesCount());
         response.setStatus(booking.getStatus());
         response.setRejectionReason(booking.getRejectionReason());
+        response.setRemovalReason(booking.getRemovalReason());
         response.setCreatedAt(booking.getCreatedAt());
         response.setUpdatedAt(booking.getUpdatedAt());
         return response;

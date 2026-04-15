@@ -34,6 +34,11 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
+    @GetMapping("/resource/{resourceId}")
+    public ResponseEntity<List<BookingResponse>> getBookingsByResource(@PathVariable Long resourceId) {
+        return ResponseEntity.ok(bookingService.getBookingsByResource(resourceId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(bookingService.getBookingById(authentication.getName(), id));

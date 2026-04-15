@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/layout/Navbar';
 import { getResources } from '../services/resourceService';
-import { createBooking } from '../services/bookingService';
+import { createBooking, getResourceBookings } from '../services/bookingService';
 
 const BOOKING_DURATION_HOURS = 2;
 
@@ -23,6 +23,26 @@ const buildDefaultBookingForm = () => {
     endTime: toDateTimeLocalValue(endTime),
     attendeesCount: '1'
   };
+};
+
+const formatDateTime = (value) => {
+  if (!value) {
+    return 'N/A';
+  }
+
+  return new Date(value).toLocaleString();
+};
+
+const formatStatusLabel = (status) => {
+  if (!status) {
+    return 'Pending';
+  }
+
+  return status
+    .toLowerCase()
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 };
 
 const typeOptions = [
@@ -54,6 +74,10 @@ function ResourcesPage() {
   const [bookingForm, setBookingForm] = useState(buildDefaultBookingForm);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
+  const [scheduleResource, setScheduleResource] = useState(null);
+  const [scheduleBookings, setScheduleBookings] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
 
   const loadResources = async () => {
     setLoading(true);
@@ -78,6 +102,22 @@ function ResourcesPage() {
     setBookingError('');
   };
 
+  const openScheduleModal = async (resource) => {
+    setScheduleResource(resource);
+    setScheduleBookings([]);
+    setScheduleError('');
+    setScheduleLoading(true);
+
+    try {
+      const data = await getResourceBookings(resource.id);
+      setScheduleBookings(data);
+    } catch (err) {
+      setScheduleError(err?.response?.data?.message || 'Failed to load schedule');
+    } finally {
+      setScheduleLoading(false);
+    }
+  };
+
   const closeBookingModal = () => {
     if (bookingSubmitting) {
       return;
@@ -85,6 +125,12 @@ function ResourcesPage() {
 
     setSelectedResource(null);
     setBookingError('');
+  };
+
+  const closeScheduleModal = () => {
+    setScheduleResource(null);
+    setScheduleBookings([]);
+    setScheduleError('');
   };
 
   const handleBookingChange = (field, value) => {
@@ -197,6 +243,13 @@ function ResourcesPage() {
                   <div className="resource-card-actions">
                     <button
                       type="button"
+                      className="secondary-btn resource-schedule-btn"
+                      onClick={() => openScheduleModal(resource)}
+                    >
+                      View Schedule
+                    </button>
+                    <button
+                      type="button"
                       className="primary-btn resource-booking-btn"
                       onClick={() => openBookingModal(resource)}
                       disabled={resource.status !== 'ACTIVE'}
@@ -291,6 +344,59 @@ function ResourcesPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        ) : null}
+
+        {scheduleResource ? (
+          <div className="booking-modal-backdrop" role="presentation" onClick={closeScheduleModal}>
+            <div
+              className="booking-modal resource-schedule-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="schedule-modal-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="booking-modal-header">
+                <div>
+                  <p className="dashboard-kicker">View Schedule</p>
+                  <h2 id="schedule-modal-title">{scheduleResource.name}</h2>
+                  <p>{scheduleResource.location} · Capacity {scheduleResource.capacity}</p>
+                </div>
+                <button type="button" className="icon-close-btn" onClick={closeScheduleModal} aria-label="Close schedule view">
+                  ×
+                </button>
+              </div>
+
+              <div className="resource-schedule-modal-body">
+                <p className="muted-text">Current and upcoming bookings for this resource.</p>
+
+                {scheduleLoading ? (
+                  <div className="resource-schedule-state">Loading schedule...</div>
+                ) : scheduleError ? (
+                  <p className="error-text">{scheduleError}</p>
+                ) : scheduleBookings.length === 0 ? (
+                  <div className="resource-schedule-state">No current bookings for this resource.</div>
+                ) : (
+                  <div className="resource-schedule-list">
+                    {scheduleBookings.map((booking) => (
+                      <article key={booking.id} className="resource-schedule-item">
+                        <div className="resource-schedule-item-main">
+                          <div className="resource-schedule-item-time">
+                            {formatDateTime(booking.startTime)} to {formatDateTime(booking.endTime)}
+                          </div>
+                          <h3>{booking.purpose}</h3>
+                          <p>{booking.attendeesCount ?? 'N/A'} attendees</p>
+                        </div>
+
+                        <span className={`request-status request-status-${booking.status?.toLowerCase() || 'pending'}`}>
+                          {formatStatusLabel(booking.status)}
+                        </span>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : null}

@@ -17,6 +17,7 @@ public class BookingResponse {
     private Integer attendeesCount;
     private BookingStatus status;
     private String rejectionReason;
+    private String removalReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -122,6 +123,14 @@ public class BookingResponse {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getRemovalReason() {
+        return removalReason;
+    }
+
+    public void setRemovalReason(String removalReason) {
+        this.removalReason = removalReason;
     }
 
     public LocalDateTime getCreatedAt() {

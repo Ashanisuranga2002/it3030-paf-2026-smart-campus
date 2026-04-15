@@ -41,6 +41,9 @@ public class Booking {
     @Column(name = "rejection_reason", length = 255)
     private String rejectionReason;
 
+    @Column(name = "removal_reason", length = 255)
+    private String removalReason;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -134,6 +137,14 @@ public class Booking {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getRemovalReason() {
+        return removalReason;
+    }
+
+    public void setRemovalReason(String removalReason) {
+        this.removalReason = removalReason;
     }
 
     public LocalDateTime getCreatedAt() {
