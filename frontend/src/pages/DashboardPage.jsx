@@ -11,6 +11,17 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
+  const handleParallaxMove = (event) => {
+    const { innerWidth, innerHeight } = window;
+    const x = ((event.clientX / innerWidth) - 0.5) * 16;
+    const y = ((event.clientY / innerHeight) - 0.5) * 16;
+    setParallax({ x, y });
+  };
+
+  const resetParallax = () => {
+    setParallax({ x: 0, y: 0 });
+  };
+
   const loadDashboardData = async () => {
     setLoading(true);
     try {

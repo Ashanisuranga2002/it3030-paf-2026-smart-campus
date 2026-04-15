@@ -4,7 +4,6 @@ import com.groupxx.smartcampus.resource.dto.ResourceResponse;
 import com.groupxx.smartcampus.resource.entity.ResourceStatus;
 import com.groupxx.smartcampus.resource.entity.ResourceType;
 import com.groupxx.smartcampus.resource.service.ResourceService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/resources")
-@RequiredArgsConstructor
 public class ResourceController {
 
     private final ResourceService resourceService;
+
+    public ResourceController(ResourceService resourceService) {
+        this.resourceService = resourceService;
+    }
 
     @GetMapping
     public ResponseEntity<List<ResourceResponse>> getResources(

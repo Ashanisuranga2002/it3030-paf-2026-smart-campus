@@ -227,6 +227,7 @@ body::after {
   align-items: center;
   padding: 16px 24px;
   background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(219, 227, 239, 0.8);
   position: sticky;
@@ -790,6 +791,82 @@ body::after {
   gap: 8px;
 }
 
+.table-scroll-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.admin-bookings-table-card {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-bookings-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-bookings-table-header h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.admin-bookings-count {
+  flex: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #eef4ff;
+  color: #1f5eff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-bookings-table td {
+  vertical-align: top;
+}
+
+.admin-bookings-table td strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.table-subtext {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.booking-purpose-cell,
+.booking-reason-cell {
+  max-width: 280px;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.booking-table-actions {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  min-width: 180px;
+}
+
+.booking-action-accept,
+.booking-action-reject {
+  width: auto;
+  justify-content: center;
+}
+
+.booking-action-accept:disabled,
+.booking-action-reject:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .admin-resources-page {
   display: grid;
   gap: 22px;
@@ -1011,6 +1088,29 @@ body::after {
   font-size: 14px;
 }
 
+.resource-card-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.resource-booking-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.resource-booking-btn:disabled {
+  cursor: not-allowed;
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+.resource-action-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .my-bookings-card h2 {
   margin-bottom: 6px;
 }
@@ -1071,6 +1171,7 @@ body::after {
   inset: 0;
   z-index: 400;
   background: rgba(15, 23, 42, 0.42);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
@@ -1132,6 +1233,20 @@ body::after {
   border-radius: 12px;
   padding: 0 12px;
   font-size: 15px;
+}
+
+.booking-form textarea {
+  min-height: 120px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  font-family: 'Manrope', sans-serif;
+  resize: vertical;
+}
+
+.booking-reject-textarea {
+  height: auto;
 }
 
 .booking-form small {
@@ -1444,6 +1559,11 @@ body::after {
 
   .admin-decision-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-bookings-table-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
