@@ -12,7 +12,6 @@ import com.groupxx.smartcampus.auth.service.AuthService;
 import com.groupxx.smartcampus.auth.service.UserAdminService;
 import com.groupxx.smartcampus.common.exception.BadRequestException;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
@@ -33,12 +31,19 @@ public class AuthController {
     @Value("${spring.security.oauth2.client.registration.google.client-secret:}")
     private String googleClientSecret;
 
+    public AuthController(AuthService authService, UserAdminService userAdminService) {
+        this.authService = authService;
+        this.userAdminService = userAdminService;
+    }
+
     @GetMapping("/login-url")
     public ResponseEntity<LoginUrlResponse> getGoogleLoginUrl() {
         if (!isGoogleOAuthEnabled()) {
             throw new BadRequestException("Google sign-in is not configured on this server.");
         }
-        return ResponseEntity.ok(LoginUrlResponse.builder().url("/oauth2/authorization/google?prompt=select_account").build());
+        LoginUrlResponse response = new LoginUrlResponse();
+        response.setUrl("/oauth2/authorization/google?prompt=select_account");
+        return ResponseEntity.ok(response);
     }
 
     private boolean isGoogleOAuthEnabled() {

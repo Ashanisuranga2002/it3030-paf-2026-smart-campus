@@ -29,11 +29,14 @@ function RegisterPage() {
       setSuccess('Account created successfully. Redirecting to sign in...');
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data?.errors?.email ||
-        err?.response?.data?.errors?.password ||
-        'Failed to create account';
+      const isNetworkError = err?.code === 'ERR_NETWORK' || !err?.response;
+      const message = isNetworkError
+        ? 'Cannot reach backend API. Make sure the backend is running and API URL is correct.'
+        : err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.response?.data?.errors?.email ||
+          err?.response?.data?.errors?.password ||
+          'Failed to create account';
       setError(message);
     } finally {
       setLoading(false);

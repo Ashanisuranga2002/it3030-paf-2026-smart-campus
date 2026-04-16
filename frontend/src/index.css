@@ -227,6 +227,7 @@ body::after {
   align-items: center;
   padding: 16px 24px;
   background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(219, 227, 239, 0.8);
   position: sticky;
@@ -790,6 +791,96 @@ body::after {
   gap: 8px;
 }
 
+.table-scroll-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.admin-bookings-table-card {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-bookings-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-bookings-table-header h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.admin-bookings-count {
+  flex: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #eef4ff;
+  color: #1f5eff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-bookings-table td {
+  vertical-align: top;
+}
+
+.booking-row-removal-request td {
+  background: linear-gradient(180deg, rgba(238, 242, 255, 0.45), rgba(255, 255, 255, 0));
+}
+
+.admin-bookings-table td strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.table-subtext {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.booking-purpose-cell,
+.booking-reason-cell {
+  max-width: 280px;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.booking-reason-cell-removal {
+  color: #334155;
+  font-weight: 600;
+}
+
+.booking-table-actions {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  min-width: 160px;
+  justify-content: flex-start;
+}
+
+.booking-table-actions-removal {
+  justify-content: center;
+}
+
+.booking-action-accept,
+.booking-action-reject {
+  width: auto;
+  justify-content: center;
+}
+
+.booking-action-accept:disabled,
+.booking-action-reject:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .admin-resources-page {
   display: grid;
   gap: 22px;
@@ -1011,6 +1102,42 @@ body::after {
   font-size: 14px;
 }
 
+.resource-card-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.resource-schedule-btn {
+  width: 100%;
+  justify-content: center;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  box-shadow: none;
+}
+
+.resource-schedule-btn:hover {
+  background: #dbeafe;
+}
+
+.resource-booking-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.resource-booking-btn:disabled {
+  cursor: not-allowed;
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+.resource-action-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .my-bookings-card h2 {
   margin-bottom: 6px;
 }
@@ -1024,11 +1151,30 @@ body::after {
 .my-booking-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
   background: #ffffff;
+}
+
+.my-booking-side {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+  min-width: 170px;
+}
+
+.my-booking-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.booking-request-remove-btn {
+  min-width: 150px;
 }
 
 .my-booking-item h4 {
@@ -1041,17 +1187,28 @@ body::after {
 }
 
 .request-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 800;
   border: 1px solid transparent;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .request-status-pending {
   background: #fffbeb;
   color: #b45309;
   border-color: #fde68a;
+}
+.request-status-removal_request {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  color: #3730a3;
+  border-color: #c7d2fe;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .request-status-approved {
@@ -1065,12 +1222,28 @@ body::after {
   color: #b91c1c;
   border-color: #fecaca;
 }
+.booking-action-remove {
+  background: #dc2626;
+  color: #ffffff;
+  min-width: 110px;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.22);
+}
+.booking-action-remove:hover {
+  background: #b91c1c;
+}
+.table-empty-action {
+  color: var(--muted);
+  font-weight: 600;
+  align-self: center;
+}
 
 .booking-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 400;
   background: rgba(15, 23, 42, 0.42);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
@@ -1084,6 +1257,62 @@ body::after {
   border-radius: 18px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+}
+
+.resource-schedule-modal {
+  width: min(720px, 100%);
+}
+
+.resource-schedule-modal-body {
+  padding: 18px 22px 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.resource-schedule-state {
+  padding: 14px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  background: #f8fbff;
+}
+
+.resource-schedule-list {
+  display: grid;
+  gap: 10px;
+}
+
+.resource-schedule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.resource-schedule-item-main {
+  display: grid;
+  gap: 4px;
+}
+
+.resource-schedule-item-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.resource-schedule-item h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.resource-schedule-item p {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .booking-modal-header {
@@ -1132,6 +1361,20 @@ body::after {
   border-radius: 12px;
   padding: 0 12px;
   font-size: 15px;
+}
+
+.booking-form textarea {
+  min-height: 120px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  font-family: 'Manrope', sans-serif;
+  resize: vertical;
+}
+
+.booking-reject-textarea {
+  height: auto;
 }
 
 .booking-form small {
@@ -1296,6 +1539,231 @@ body::after {
   line-height: 1.6;
 }
 
+/* ── Ticket Workflow ─────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(15, 23, 42, 0.46);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.modal-card {
+  width: min(860px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.ticket-modal {
+  padding: 18px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ticket-form {
+  display: grid;
+  gap: 12px;
+}
+
+.ticket-form label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-weight: 700;
+}
+
+.ticket-form textarea.text-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.ticket-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ticket-attachments {
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.ticket-attachment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.ticket-attachment-item {
+  border: 1px solid #dbe3ef;
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 6px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ticket-attachment-item img {
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ticket-attachment-item p {
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticket-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ticket-page {
+  display: grid;
+  gap: 14px;
+}
+
+.ticket-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ticket-list {
+  display: grid;
+  gap: 12px;
+}
+
+.ticket-card {
+  display: grid;
+  gap: 10px;
+}
+
+.ticket-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ticket-id {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.ticket-badges {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ticket-badge {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid transparent;
+}
+
+.badge-status-open { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
+.badge-status-assigned { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-status-in_progress { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.badge-status-resolved { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+
+.badge-priority-low { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+.badge-priority-medium { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-priority-high { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.badge-priority-critical { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+.ticket-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  color: #334155;
+  font-size: 14px;
+}
+
+.ticket-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ticket-actions-row select.text-input {
+  min-width: 230px;
+}
+
+.ticket-replies {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.ticket-reply-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ticket-reply-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 10px;
+}
+
+.ticket-reply-item p {
+  margin-bottom: 4px;
+}
+
+.ticket-reply-item small {
+  color: #64748b;
+}
+
+.ticket-reply-form {
+  display: grid;
+  gap: 8px;
+}
+
+.ticket-reply-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ticket-reply-actions select.text-input {
+  min-width: 220px;
+}
+
 /* ── Keyframe Animations ─────────────────────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(14px); }
@@ -1443,6 +1911,23 @@ body::after {
   }
 
   .admin-decision-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-bookings-table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ticket-page-header,
+  .ticket-card-head,
+  .ticket-reply-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ticket-form-grid,
+  .ticket-meta-grid {
     grid-template-columns: 1fr;
   }
 }

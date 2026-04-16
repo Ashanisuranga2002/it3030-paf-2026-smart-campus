@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import ResourcesPage from './pages/ResourcesPage';
 import AdminResourcesPage from './pages/AdminResourcesPage';
+import BookingsPage from './pages/BookingsPage';
+import TicketsPage from './pages/TicketsPage';
 import OAuthSuccessPage from './pages/OAuthSuccessPage';
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -29,6 +31,24 @@ function App() {
         element={
           <ProtectedRoute>
             <ResourcesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/bookings"
+        element={
+          <ProtectedRoute>
+            <BookingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/tickets"
+        element={
+          <ProtectedRoute>
+            <TicketsPage />
           </ProtectedRoute>
         }
       />

@@ -1,4 +1,7 @@
 -- Seed data adapted from Dump20260414.sql for local H2 profile.
+DELETE FROM ticket_replies;
+DELETE FROM ticket_attachments;
+DELETE FROM tickets;
 DELETE FROM notifications;
 DELETE FROM users;
 
