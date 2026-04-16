@@ -21,23 +21,25 @@ public class H2DevAdminSeeder {
     @Bean
     public CommandLineRunner seedDevAdminUser() {
         return args -> {
-            String email = "admin@smartcampus.local";
-            String rawPassword = "Admin@123";
-
-            User user = userRepository.findByEmail(email)
-                    .orElseGet(() -> User.builder()
-                            .email(email)
-                            .name("Campus Admin")
-                            .role(RoleType.ADMIN)
-                            .active(true)
-                            .build());
-
-            user.setName("Campus Admin");
-            user.setRole(RoleType.ADMIN);
-            user.setActive(true);
-            user.setPasswordHash(passwordEncoder.encode(rawPassword));
-
-            userRepository.save(user);
+            seedOrUpdateAdmin("admin@smartcampus.local", "Campus Admin", "Admin@123");
+            seedOrUpdateAdmin("admin2@smartcampus.local", "Operations Admin", "Admin@123");
         };
+    }
+
+    private void seedOrUpdateAdmin(String email, String name, String rawPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseGet(() -> User.builder()
+                        .email(email)
+                        .name(name)
+                        .role(RoleType.ADMIN)
+                        .active(true)
+                        .build());
+
+        user.setName(name);
+        user.setRole(RoleType.ADMIN);
+        user.setActive(true);
+        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+
+        userRepository.save(user);
     }
 }

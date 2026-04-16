@@ -21,22 +21,24 @@ public class H2DevUserSeeder {
     @Bean
     public CommandLineRunner seedDevUser() {
         return args -> {
-            seedOrUpdateUser("receptionist@healx.com", "Receptionist", "Reception@123");
-            seedOrUpdateUser("rashmika@gmail.com", "Rashmika", "Rashmika@123");
+            seedOrUpdateUser("receptionist@healx.com", "Receptionist", "Reception@123", RoleType.USER);
+            seedOrUpdateUser("rashmika@gmail.com", "Rashmika", "Rashmika@123", RoleType.USER);
+            seedOrUpdateUser("tech1@smartcampus.local", "Technician One", "Tech@123", RoleType.TECHNICIAN);
+            seedOrUpdateUser("tech2@smartcampus.local", "Technician Two", "Tech@123", RoleType.TECHNICIAN);
         };
     }
 
-    private void seedOrUpdateUser(String email, String name, String rawPassword) {
+    private void seedOrUpdateUser(String email, String name, String rawPassword, RoleType role) {
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> User.builder()
                         .email(email)
                         .name(name)
-                        .role(RoleType.USER)
+                        .role(role)
                         .active(true)
                         .build());
 
         user.setName(name);
-        user.setRole(RoleType.USER);
+        user.setRole(role);
         user.setActive(true);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
 
