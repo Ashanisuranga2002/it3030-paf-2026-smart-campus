@@ -10,6 +10,11 @@ function Navbar() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const bookingLabel = user?.role === 'ADMIN' ? 'Bookings' : 'My Bookings';
+  const ticketLabel = user?.role === 'ADMIN'
+    ? 'All Tickets'
+    : user?.role === 'TECHNICIAN'
+      ? 'Assigned Tickets'
+      : 'My Tickets';
 
   const loadUnread = async () => {
     try {
@@ -52,6 +57,10 @@ function Navbar() {
 
         <Link className="secondary-btn nav-link-btn" to="/bookings">
           {bookingLabel}
+        </Link>
+
+        <Link className="secondary-btn nav-link-btn" to="/tickets">
+          {ticketLabel}
         </Link>
 
         {user?.role === 'ADMIN' && (
