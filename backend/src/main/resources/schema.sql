@@ -45,7 +45,9 @@ CREATE TABLE IF NOT EXISTS bookings (
     attendees_count INT,
     status VARCHAR(50) NOT NULL,
     rejection_reason VARCHAR(255),
+    removal_reason VARCHAR(255),
     created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
     CONSTRAINT fk_bookings_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_bookings_resource FOREIGN KEY (resource_id) REFERENCES resources(id)
 );
