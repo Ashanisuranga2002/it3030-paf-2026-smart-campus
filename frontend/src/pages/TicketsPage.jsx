@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import Navbar from '../components/layout/Navbar';
+import DashboardLayout from '../layouts/DashboardLayout';
 import TicketFormModal from '../components/ticket/TicketFormModal';
 import { useAuth } from '../context/AuthContext';
 import { getAllUsers } from '../services/userManagementService';
@@ -24,6 +24,7 @@ function TicketsPage() {
   const [replyDrafts, setReplyDrafts] = useState({});
   const [technicians, setTechnicians] = useState([]);
   const [technicianSelection, setTechnicianSelection] = useState({});
+  const [adminFilter, setAdminFilter] = useState('ALL');
 
   const isAdmin = user?.role === 'ADMIN';
   const isTechnician = user?.role === 'TECHNICIAN';
@@ -69,10 +70,23 @@ function TicketsPage() {
     loadTechnicians();
   }, []);
 
-  const sortedTickets = useMemo(
-    () => [...tickets].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)),
-    [tickets]
-  );
+  const sortedTickets = useMemo(() => {
+    const ordered = [...tickets].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+    if (!isAdmin || adminFilter === 'ALL') {
+      return ordered;
+    }
+
+    if (adminFilter === 'ASSIGNED') {
+      return ordered.filter((ticket) => ticket.assignedToId != null);
+    }
+
+    if (adminFilter === 'REPLIED') {
+      return ordered.filter((ticket) => (ticket.replies?.length || 0) > 0);
+    }
+
+    return ordered;
+  }, [tickets, isAdmin, adminFilter]);
 
   const createTicketInitialValues = useMemo(
     () => ({ contactEmail: user?.email || '' }),
@@ -188,9 +202,7 @@ function TicketsPage() {
   };
 
   return (
-    <div>
-      <Navbar />
-
+    <DashboardLayout>
       <div className="page-container ticket-page">
         <div className="card ticket-page-header">
           <div>
@@ -203,6 +215,14 @@ function TicketsPage() {
                   : 'Raise issues and track ticket progress.'}
             </p>
           </div>
+
+          {isAdmin && (
+            <select className="text-input ticket-admin-filter" value={adminFilter} onChange={(event) => setAdminFilter(event.target.value)}>
+              <option value="ALL">All Tickets</option>
+              <option value="ASSIGNED">Assigned Tickets</option>
+              <option value="REPLIED">Replied Tickets</option>
+            </select>
+          )}
 
           {user?.role === 'USER' && (
             <button className="primary-btn" onClick={() => setShowCreateModal(true)}>
@@ -385,7 +405,7 @@ function TicketsPage() {
         submitting={submitting}
         initialValues={editingTicket}
       />
-    </div>
+    </DashboardLayout>
   );
 }
 

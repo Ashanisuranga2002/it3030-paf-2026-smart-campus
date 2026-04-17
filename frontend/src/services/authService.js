@@ -10,6 +10,11 @@ export const getCurrentUser = async () => {
   return response.data;
 };
 
+export const updateCurrentUser = async (payload) => {
+  const response = await axiosInstance.put('/api/auth/me', payload);
+  return response.data;
+};
+
 export const registerUser = async (name, email, password) => {
   const response = await axiosInstance.post('/api/auth/register', {
     name,

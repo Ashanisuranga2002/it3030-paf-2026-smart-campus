@@ -87,6 +87,15 @@ public class TicketService {
                 saved.getId()
         );
 
+        notificationService.createNotification(
+            requester.getEmail(),
+            NotificationType.TICKET_STATUS_CHANGED,
+            "Ticket Submitted",
+            "Your ticket #" + saved.getId() + " was submitted successfully.",
+            "TICKET",
+            saved.getId()
+        );
+
         return toResponse(saved, requester);
     }
 
@@ -153,6 +162,17 @@ public class TicketService {
                 ticket.getId()
         );
 
+        if (!ticket.getCreatedBy().getEmail().equalsIgnoreCase(technician.getEmail())) {
+            notificationService.createNotification(
+                ticket.getCreatedBy().getEmail(),
+                NotificationType.TICKET_STATUS_CHANGED,
+                "Ticket Assigned",
+                "Your ticket #" + ticket.getId() + " was assigned to technician " + technician.getName(),
+                "TICKET",
+                ticket.getId()
+            );
+        }
+
         return toResponse(saved, requester);
     }
 
@@ -207,6 +227,17 @@ public class TicketService {
                     NotificationType.NEW_TICKET_COMMENT,
                     "Admin Reply Added",
                     requester.getName() + " replied to ticket #" + ticket.getId(),
+                    "TICKET",
+                    ticket.getId()
+            );
+        }
+
+        if (!ticket.getCreatedBy().getEmail().equalsIgnoreCase(requester.getEmail())) {
+            notificationService.createNotification(
+                    ticket.getCreatedBy().getEmail(),
+                    NotificationType.NEW_TICKET_COMMENT,
+                    "Ticket Reply Added",
+                    requester.getName() + " replied to your ticket #" + ticket.getId(),
                     "TICKET",
                     ticket.getId()
             );

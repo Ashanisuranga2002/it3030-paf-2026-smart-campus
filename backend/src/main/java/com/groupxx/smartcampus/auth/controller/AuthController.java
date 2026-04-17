@@ -3,6 +3,7 @@ package com.groupxx.smartcampus.auth.controller;
 import com.groupxx.smartcampus.auth.dto.AuthResponse;
 import com.groupxx.smartcampus.auth.dto.EmailPasswordLoginRequest;
 import com.groupxx.smartcampus.auth.dto.LoginUrlResponse;
+import com.groupxx.smartcampus.auth.dto.ProfileUpdateRequest;
 import com.groupxx.smartcampus.auth.dto.RegisterRequest;
 import com.groupxx.smartcampus.auth.dto.RegisterResponse;
 import com.groupxx.smartcampus.auth.dto.RoleUpdateRequest;
@@ -54,6 +55,12 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
         return ResponseEntity.ok(authService.getCurrentUserProfile(authentication.getName()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserProfileResponse> updateMe(Authentication authentication,
+                                                        @Valid @RequestBody ProfileUpdateRequest request) {
+        return ResponseEntity.ok(authService.updateCurrentUserProfile(authentication.getName(), request));
     }
 
     @PostMapping("/register")

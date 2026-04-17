@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated: !!user,
         loginWithToken,
+        refreshProfile: fetchProfile,
         logout
       }}
     >

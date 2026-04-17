@@ -1,7 +1,10 @@
 package com.groupxx.smartcampus.resource.service;
 
+import com.groupxx.smartcampus.auth.entity.RoleType;
 import com.groupxx.smartcampus.common.exception.BadRequestException;
 import com.groupxx.smartcampus.common.exception.ResourceNotFoundException;
+import com.groupxx.smartcampus.notification.entity.NotificationType;
+import com.groupxx.smartcampus.notification.service.NotificationService;
 import com.groupxx.smartcampus.resource.dto.ResourceResponse;
 import com.groupxx.smartcampus.resource.dto.ResourceUpsertRequest;
 import com.groupxx.smartcampus.resource.entity.CampusResource;
@@ -16,9 +19,12 @@ import java.util.List;
 public class ResourceService {
 
     private final CampusResourceRepository campusResourceRepository;
+    private final NotificationService notificationService;
 
-    public ResourceService(CampusResourceRepository campusResourceRepository) {
+    public ResourceService(CampusResourceRepository campusResourceRepository,
+                           NotificationService notificationService) {
         this.campusResourceRepository = campusResourceRepository;
+        this.notificationService = notificationService;
     }
 
     public List<ResourceResponse> getResources(String search, ResourceType type, ResourceStatus status) {
@@ -50,7 +56,14 @@ public class ResourceService {
         resource.setType(request.getType());
         resource.setStatus(request.getStatus());
 
-        return toResponse(campusResourceRepository.save(resource));
+        CampusResource saved = campusResourceRepository.save(resource);
+        notifyAllRoles(
+            NotificationType.ADMIN_ALERT,
+            "New Resource Added",
+            "Resource '" + saved.getName() + "' is now available on campus.",
+            saved.getId()
+        );
+        return toResponse(saved);
     }
 
     public ResourceResponse updateResource(Long id, ResourceUpsertRequest request) {
@@ -65,12 +78,33 @@ public class ResourceService {
         resource.setType(request.getType());
         resource.setStatus(request.getStatus());
 
-        return toResponse(campusResourceRepository.save(resource));
+        CampusResource saved = campusResourceRepository.save(resource);
+        notifyAllRoles(
+            NotificationType.ADMIN_ALERT,
+            "Resource Updated",
+            "Resource '" + saved.getName() + "' details were updated.",
+            saved.getId()
+        );
+        return toResponse(saved);
     }
 
     public void deleteResource(Long id) {
         CampusResource resource = getResourceEntityById(id);
+        Long resourceId = resource.getId();
+        String resourceName = resource.getName();
         campusResourceRepository.delete(resource);
+        notifyAllRoles(
+                NotificationType.ADMIN_ALERT,
+                "Resource Removed",
+                "Resource '" + resourceName + "' was removed from listings.",
+                resourceId
+        );
+    }
+
+    private void notifyAllRoles(NotificationType type, String title, String message, Long referenceId) {
+        notificationService.createNotificationForRole(RoleType.ADMIN, type, title, message, "RESOURCE", referenceId);
+        notificationService.createNotificationForRole(RoleType.TECHNICIAN, type, title, message, "RESOURCE", referenceId);
+        notificationService.createNotificationForRole(RoleType.USER, type, title, message, "RESOURCE", referenceId);
     }
 
     public CampusResource getResourceEntityById(Long id) {

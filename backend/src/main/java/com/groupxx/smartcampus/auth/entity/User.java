@@ -20,7 +20,24 @@ public class User {
 
     private String passwordHash;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String profilePicture;
+
+    @Column(length = 30)
+    private String phoneNumber;
+
+    @Column(length = 120)
+    private String department;
+
+    @Column(length = 120)
+    private String faculty;
+
+    @Column(length = 255)
+    private String address;
+
+    @Column(length = 1000)
+    private String bio;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -91,6 +108,46 @@ public class User {
         this.profilePicture = profilePicture;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(String faculty) {
+        this.faculty = faculty;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
     public RoleType getRole() {
         return role;
     }
@@ -133,6 +190,11 @@ public class User {
         private String email;
         private String passwordHash;
         private String profilePicture;
+        private String phoneNumber;
+        private String department;
+        private String faculty;
+        private String address;
+        private String bio;
         private RoleType role;
         private Boolean active;
         private LocalDateTime createdAt;
@@ -166,6 +228,31 @@ public class User {
             return this;
         }
 
+        public Builder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public Builder department(String department) {
+            this.department = department;
+            return this;
+        }
+
+        public Builder faculty(String faculty) {
+            this.faculty = faculty;
+            return this;
+        }
+
+        public Builder address(String address) {
+            this.address = address;
+            return this;
+        }
+
+        public Builder bio(String bio) {
+            this.bio = bio;
+            return this;
+        }
+
         public Builder role(RoleType role) {
             this.role = role;
             return this;
@@ -193,6 +280,11 @@ public class User {
             user.setEmail(email);
             user.setPasswordHash(passwordHash);
             user.setProfilePicture(profilePicture);
+            user.setPhoneNumber(phoneNumber);
+            user.setDepartment(department);
+            user.setFaculty(faculty);
+            user.setAddress(address);
+            user.setBio(bio);
             user.setRole(role);
             user.setActive(active);
             user.setCreatedAt(createdAt);

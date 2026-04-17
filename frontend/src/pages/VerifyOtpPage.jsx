@@ -26,7 +26,7 @@ function VerifyOtpPage() {
     try {
       const data = await verifyTwoFactor(challenge, code);
       await loginWithToken(data.token);
-      navigate('/dashboard');
+      navigate('/resources');
     } catch (err) {
       setError(err?.response?.data?.message || 'Invalid code. Try again.');
     } finally {
