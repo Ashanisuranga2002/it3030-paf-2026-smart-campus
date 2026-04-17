@@ -1,6 +1,7 @@
 package com.groupxx.smartcampus.auth.service;
 
 import com.groupxx.smartcampus.auth.dto.AuthResponse;
+import com.groupxx.smartcampus.auth.dto.ProfileUpdateRequest;
 import com.groupxx.smartcampus.auth.dto.RegisterResponse;
 import com.groupxx.smartcampus.auth.dto.TwoFactorChallengeResponse;
 import com.groupxx.smartcampus.auth.dto.UserProfileResponse;
@@ -52,8 +53,59 @@ public class AuthService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .profilePicture(user.getProfilePicture())
+            .phoneNumber(user.getPhoneNumber())
+            .department(user.getDepartment())
+            .faculty(user.getFaculty())
+            .address(user.getAddress())
+            .bio(user.getBio())
                 .role(user.getRole())
                 .build();
+    }
+
+    public UserProfileResponse updateCurrentUserProfile(String email, ProfileUpdateRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (request.getName() != null) {
+            String normalizedName = request.getName().trim();
+            if (normalizedName.isEmpty()) {
+                throw new BadRequestException("Name cannot be empty");
+            }
+            user.setName(normalizedName);
+        }
+
+        if (request.getProfilePicture() != null) {
+            String picture = request.getProfilePicture().trim();
+            user.setProfilePicture(picture.isEmpty() ? null : picture);
+        }
+
+        if (request.getPhoneNumber() != null) {
+            String phone = request.getPhoneNumber().trim();
+            user.setPhoneNumber(phone.isEmpty() ? null : phone);
+        }
+
+        if (request.getDepartment() != null) {
+            String department = request.getDepartment().trim();
+            user.setDepartment(department.isEmpty() ? null : department);
+        }
+
+        if (request.getFaculty() != null) {
+            String faculty = request.getFaculty().trim();
+            user.setFaculty(faculty.isEmpty() ? null : faculty);
+        }
+
+        if (request.getAddress() != null) {
+            String address = request.getAddress().trim();
+            user.setAddress(address.isEmpty() ? null : address);
+        }
+
+        if (request.getBio() != null) {
+            String bio = request.getBio().trim();
+            user.setBio(bio.isEmpty() ? null : bio);
+        }
+
+        userRepository.save(user);
+        return getCurrentUserProfile(user.getEmail());
     }
 
     public RegisterResponse register(String name, String email, String password) {

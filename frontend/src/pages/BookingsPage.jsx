@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Navbar from '../components/layout/Navbar';
+import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import {
   deleteBooking,
@@ -324,9 +324,7 @@ function BookingsPage() {
   }, [isAdmin]);
 
   return (
-    <div className="page-wrapper">
-      <Navbar />
-
+    <DashboardLayout>
       <div className="page-container admin-bookings-page">
         <section className="card admin-bookings-header-row">
           <div>
@@ -728,7 +726,7 @@ function BookingsPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </DashboardLayout>
   );
 }
 

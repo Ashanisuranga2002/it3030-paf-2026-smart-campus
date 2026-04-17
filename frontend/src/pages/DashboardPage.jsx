@@ -1,10 +1,8 @@
-import Navbar from '../components/layout/Navbar';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import DashboardLayout from '../layouts/DashboardLayout';
 import { getNotifications, getUnreadCount } from '../services/notificationService';
-import { createTicket } from '../services/ticketService';
-import TicketFormModal from '../components/ticket/TicketFormModal';
 
 function DashboardPage() {
   const { user, logout } = useAuth();
@@ -12,15 +10,11 @@ function DashboardPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
-  const [showTicketModal, setShowTicketModal] = useState(false);
-  const [ticketSubmitting, setTicketSubmitting] = useState(false);
-  const [ticketMessage, setTicketMessage] = useState('');
-  const [ticketError, setTicketError] = useState('');
 
   const handleParallaxMove = (event) => {
-    const { innerWidth, innerHeight } = window;
-    const x = ((event.clientX / innerWidth) - 0.5) * 16;
-    const y = ((event.clientY / innerHeight) - 0.5) * 16;
+    const maxOffset = 14;
+    const x = ((event.clientX / window.innerWidth) - 0.5) * maxOffset;
+    const y = ((event.clientY / window.innerHeight) - 0.5) * maxOffset;
     setParallax({ x, y });
   };
 
@@ -44,23 +38,6 @@ function DashboardPage() {
     }
   };
 
-  const handleRaiseTicket = async (payload) => {
-    setTicketSubmitting(true);
-    setTicketError('');
-    setTicketMessage('');
-
-    try {
-      await createTicket(payload);
-      setShowTicketModal(false);
-      setTicketMessage('Ticket raised successfully. You can track it in My Tickets.');
-    } catch (error) {
-      const message = error?.response?.data?.message || error?.response?.data?.error || 'Failed to raise ticket';
-      setTicketError(message);
-    } finally {
-      setTicketSubmitting(false);
-    }
-  };
-
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -75,11 +52,6 @@ function DashboardPage() {
     const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     return notifications.filter((item) => new Date(item.createdAt).getTime() >= sevenDaysAgo).length;
   }, [notifications]);
-
-  const ticketInitialValues = useMemo(
-    () => ({ contactEmail: user?.email || '' }),
-    [user?.email]
-  );
 
   const statCards = [
     {
@@ -108,15 +80,64 @@ function DashboardPage() {
     }
   ];
 
-  return (
-    <div
-      style={{ '--px': `${parallax.x}px`, '--py': `${parallax.y}px` }}
-      onMouseMove={handleParallaxMove}
-      onMouseLeave={resetParallax}
-    >
-      <Navbar />
+  const quickActions = [
+    {
+      to: '/resources',
+      label: 'Resource Management',
+      desc: 'Browse facilities and view campus resource details.',
+      emoji: '🏢',
+      theme: 'quick-tile-theme-blue',
+      isLink: true,
+    },
+    {
+      to: '/dashboard',
+      label: 'Refresh Dashboard',
+      desc: 'Reload your command center and recalculate live metrics.',
+      emoji: '🔄',
+      theme: 'quick-tile-theme-blue',
+      isLink: true,
+    },
+    {
+      onClick: loadDashboardData,
+      label: 'Sync Activity',
+      desc: 'Pull latest alerts and timeline items from the server.',
+      emoji: '⚡',
+      theme: 'quick-tile-theme-cyan',
+      isLink: false,
+    },
+    ...(user?.role === 'ADMIN' ? [{
+      to: '/admin/users',
+      label: 'Manage Users',
+      desc: 'Open role-based user administration and account controls.',
+      emoji: '👥',
+      theme: 'quick-tile-theme-amber quick-tile-admin',
+      isLink: true,
+    }, {
+      to: '/admin/resources',
+      label: 'Manage Resources',
+      desc: 'Create, update, and remove campus resources.',
+      emoji: '🏢',
+      theme: 'quick-tile-theme-cyan quick-tile-admin',
+      isLink: true,
+    }] : []),
+    {
+      onClick: logout,
+      label: 'Secure Logout',
+      desc: 'End your current session and return to the login portal.',
+      emoji: '🔒',
+      theme: 'quick-tile-danger quick-tile-theme-rose',
+      isLink: false,
+    },
+  ];
 
-      <div className="page-container dashboard-page">
+  return (
+    <DashboardLayout>
+      <div
+        className="page-container dashboard-page"
+        style={{ '--px': `${parallax.x}px`, '--py': `${parallax.y}px` }}
+        onMouseMove={handleParallaxMove}
+        onMouseLeave={resetParallax}
+      >
         <section className="card dashboard-hero">
           <div>
             <p className="dashboard-kicker">Overview</p>
@@ -128,16 +149,8 @@ function DashboardPage() {
           <div className="dashboard-hero-meta">
             <p><strong>Email:</strong> {user?.email}</p>
             <p><strong>Role:</strong> {user?.role}</p>
-            {user?.role === 'USER' && (
-              <button className="primary-btn" onClick={() => setShowTicketModal(true)}>
-                Raise Ticket
-              </button>
-            )}
           </div>
         </section>
-
-        {ticketError ? <p className="error-text">{ticketError}</p> : null}
-        {ticketMessage ? <p className="success-text">{ticketMessage}</p> : null}
 
         <section className="dashboard-grid stats-grid" aria-label="Stats">
           {statCards.map((item) => (
@@ -211,17 +224,7 @@ function DashboardPage() {
           </article>
         </section>
       </div>
-
-      <TicketFormModal
-        open={showTicketModal}
-        onClose={() => setShowTicketModal(false)}
-        onSubmit={handleRaiseTicket}
-        title="Raise Ticket"
-        submitLabel="Submit Ticket"
-        submitting={ticketSubmitting}
-        initialValues={ticketInitialValues}
-      />
-    </div>
+    </DashboardLayout>
   );
 }
 

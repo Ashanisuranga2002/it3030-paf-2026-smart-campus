@@ -24,7 +24,7 @@ function OAuthSuccessPage() {
 
       try {
         await loginWithToken(token);
-        navigate('/dashboard');
+        navigate('/resources');
       } catch (error) {
         console.error('OAuth success handling failed', error);
         navigate('/login');

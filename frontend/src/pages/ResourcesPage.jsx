@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import Navbar from '../components/layout/Navbar';
+import DashboardLayout from '../layouts/DashboardLayout';
 import { getResources } from '../services/resourceService';
 import { createBooking, getResourceBookings } from '../services/bookingService';
+import { getResourceImageUrl } from '../utils/resourceImage';
 
 const BOOKING_DURATION_HOURS = 2;
 
@@ -181,9 +182,7 @@ function ResourcesPage() {
   };
 
   return (
-    <div className="page-wrapper">
-      <Navbar />
-
+    <DashboardLayout>
       <div className="page-container resources-page">
         <section className="resources-header card">
           <h1>Facilities &amp; Assets</h1>
@@ -224,7 +223,7 @@ function ResourcesPage() {
             {resources.map((resource) => (
               <article key={resource.id} className={`resource-card ${resource.status !== 'ACTIVE' ? 'resource-card-disabled' : ''}`}>
                 <div className="resource-card-media-wrap">
-                  <img src={resource.imageUrl} alt={resource.name} className="resource-card-media" />
+                  <img src={getResourceImageUrl(resource)} alt={resource.name} className="resource-card-media" />
                   <span className="resource-type-badge">{resource.type.replace('_', ' ')}</span>
                   <span className={`resource-status-chip ${resource.status === 'ACTIVE' ? 'active' : 'out'}`}>
                     {resource.status === 'ACTIVE' ? 'ACTIVE' : 'OUT OF SERVICE'}
@@ -401,7 +400,7 @@ function ResourcesPage() {
           </div>
         ) : null}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

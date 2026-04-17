@@ -24,7 +24,8 @@ public class CampusResource {
     @Column(nullable = false)
     private Integer capacity;
 
-    @Column(length = 1000)
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)

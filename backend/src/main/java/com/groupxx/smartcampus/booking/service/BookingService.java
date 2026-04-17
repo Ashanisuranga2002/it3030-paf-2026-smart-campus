@@ -13,6 +13,8 @@ import com.groupxx.smartcampus.booking.repository.BookingRepository;
 import com.groupxx.smartcampus.common.exception.BadRequestException;
 import com.groupxx.smartcampus.common.exception.ForbiddenException;
 import com.groupxx.smartcampus.common.exception.ResourceNotFoundException;
+import com.groupxx.smartcampus.notification.entity.NotificationType;
+import com.groupxx.smartcampus.notification.service.NotificationService;
 import com.groupxx.smartcampus.resource.entity.CampusResource;
 import com.groupxx.smartcampus.resource.entity.ResourceStatus;
 import com.groupxx.smartcampus.resource.repository.CampusResourceRepository;
@@ -38,13 +40,16 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final CampusResourceRepository campusResourceRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public BookingService(BookingRepository bookingRepository,
                           CampusResourceRepository campusResourceRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          NotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.campusResourceRepository = campusResourceRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<BookingResponse> getMyBookings(String email) {
@@ -99,7 +104,18 @@ public class BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setRemovalReason(null);
 
-        return toResponse(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        notificationService.createNotificationForRole(
+            RoleType.ADMIN,
+            NotificationType.ADMIN_ALERT,
+            "New Booking Request",
+            user.getName() + " requested booking #" + saved.getId() + " for " + resource.getName(),
+            "BOOKING",
+            saved.getId()
+        );
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -121,6 +137,15 @@ public class BookingService {
             booking.setStatus(BookingStatus.REMOVAL_REQUEST);
             booking.setRemovalReason(removalReason);
             booking.setRejectionReason(null);
+
+                notificationService.createNotificationForRole(
+                    RoleType.ADMIN,
+                    NotificationType.BOOKING_REMOVAL_REQUEST,
+                    "Booking Removal Requested",
+                    user.getName() + " requested removal for booking #" + booking.getId(),
+                    "BOOKING",
+                    booking.getId()
+                );
         } else {
             CampusResource resource = getActiveResourceById(request.getResourceId());
             validateBookingWindow(request.getStartTime(), request.getEndTime());
@@ -134,6 +159,15 @@ public class BookingService {
             booking.setStatus(BookingStatus.PENDING);
             booking.setRejectionReason(null);
             booking.setRemovalReason(null);
+
+                notificationService.createNotificationForRole(
+                    RoleType.ADMIN,
+                    NotificationType.ADMIN_ALERT,
+                    "Booking Updated",
+                    user.getName() + " updated booking #" + booking.getId() + " and resubmitted for approval",
+                    "BOOKING",
+                    booking.getId()
+                );
         }
 
         return toResponse(bookingRepository.save(booking));
@@ -176,6 +210,15 @@ public class BookingService {
                 booking.setStatus(BookingStatus.APPROVED);
                 booking.setRejectionReason(null);
                 booking.setRemovalReason(null);
+
+                notificationService.createNotification(
+                    booking.getUser().getEmail(),
+                    NotificationType.BOOKING_APPROVED,
+                    "Booking Approved",
+                    "Your booking #" + booking.getId() + " was approved by " + admin.getName(),
+                    "BOOKING",
+                    booking.getId()
+                );
             }
             case REJECTED -> {
                 String rejectionReason = normalizeOptional(request.getRejectionReason());
@@ -185,6 +228,15 @@ public class BookingService {
                 booking.setStatus(BookingStatus.REJECTED);
                 booking.setRejectionReason(rejectionReason);
                 booking.setRemovalReason(null);
+
+                notificationService.createNotification(
+                    booking.getUser().getEmail(),
+                    NotificationType.BOOKING_REJECTED,
+                    "Booking Rejected",
+                    "Your booking #" + booking.getId() + " was rejected by " + admin.getName(),
+                    "BOOKING",
+                    booking.getId()
+                );
             }
             case REMOVAL_REQUEST -> throw new BadRequestException("Removal requests are submitted by the booking owner");
             default -> throw new BadRequestException("Bookings can only be approved, rejected, or marked for removal");

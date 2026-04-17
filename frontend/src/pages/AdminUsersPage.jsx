@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Navbar from '../components/layout/Navbar';
+import DashboardLayout from '../layouts/DashboardLayout';
 import {
   createUser,
   deleteUser,
@@ -105,9 +105,7 @@ function AdminUsersPage() {
   };
 
   return (
-    <div>
-      <Navbar />
-
+    <DashboardLayout>
       <div className="page-container admin-users-page">
         <div className="card">
           <h1>User Management (Admin)</h1>
@@ -200,7 +198,7 @@ function AdminUsersPage() {
           )}
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

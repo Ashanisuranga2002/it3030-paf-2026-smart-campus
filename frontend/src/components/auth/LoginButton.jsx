@@ -4,7 +4,8 @@ function LoginButton() {
   const handleLogin = async () => {
     try {
       const data = await getLoginUrl();
-      window.location.href = `${import.meta.env.VITE_API_BASE_URL}${data.url}`;
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      window.location.href = `${apiBaseUrl}${data.url}`;
     } catch (error) {
       console.error('Login redirect failed', error);
       const message = error?.response?.data?.message || 'Google sign-in is currently unavailable.';

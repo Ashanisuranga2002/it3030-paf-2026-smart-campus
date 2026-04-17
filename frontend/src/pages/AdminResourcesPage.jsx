@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import Navbar from '../components/layout/Navbar';
+import DashboardLayout from '../layouts/DashboardLayout';
 import {
   createResource,
   deleteResource,
   getAdminResources,
   updateResource
 } from '../services/adminResourceService';
+import { buildResourceImageDataUrl, getResourceImageUrl } from '../utils/resourceImage';
 
 const typeOptions = ['AUDITORIUM', 'LAB', 'CLASSROOM', 'MEETING_ROOM', 'LIBRARY', 'SPORTS'];
 const statusOptions = ['ACTIVE', 'OUT_OF_SERVICE'];
@@ -25,14 +26,17 @@ function AdminResourcesPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [imageFileName, setImageFileName] = useState('');
 
-  const loadResources = async () => {
+  const loadResources = async (searchOverride) => {
     setLoading(true);
     setError('');
+    const effectiveSearch = typeof searchOverride === 'string' ? searchOverride : search;
     try {
-      const data = await getAdminResources({ search });
+      const data = await getAdminResources({ search: effectiveSearch });
       setResources(data);
     } catch (err) {
       setError(err?.response?.data?.message || 'Failed to load resources');
@@ -53,23 +57,62 @@ function AdminResourcesPage() {
     }));
   };
 
+  const applyAutoImage = () => {
+    setForm((prev) => ({
+      ...prev,
+      imageUrl: buildResourceImageDataUrl(prev.name, prev.type)
+    }));
+  };
+
   const resetForm = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setImageFileName('');
+  };
+
+  const onImageFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({
+        ...prev,
+        imageUrl: String(reader.result || '')
+      }));
+      setImageFileName(file.name);
+      setError('');
+    };
+    reader.onerror = () => {
+      setError('Failed to read selected image file.');
+    };
+    reader.readAsDataURL(file);
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setSuccess('');
 
     try {
       if (editingId) {
         await updateResource(editingId, form);
+        setSuccess('Resource updated successfully.');
+        await loadResources();
       } else {
         await createResource(form);
+        setSearch('');
+        setSuccess('Resource created successfully.');
+        await loadResources('');
       }
       resetForm();
-      await loadResources();
     } catch (err) {
       const serverError = err?.response?.data;
       if (serverError?.errors) {
@@ -92,6 +135,7 @@ function AdminResourcesPage() {
       type: resource.type,
       status: resource.status
     });
+    setImageFileName('');
   };
 
   const onDelete = async (id) => {
@@ -108,9 +152,7 @@ function AdminResourcesPage() {
   };
 
   return (
-    <div className="page-wrapper">
-      <Navbar />
-
+    <DashboardLayout>
       <div className="page-container admin-resources-page">
         <section className="card">
           <h1>Resource Management</h1>
@@ -121,6 +163,22 @@ function AdminResourcesPage() {
             <input className="text-input" name="location" value={form.location} onChange={onChange} placeholder="Location" required />
             <input className="text-input" name="capacity" type="number" min={1} value={form.capacity} onChange={onChange} placeholder="Capacity" required />
             <input className="text-input" name="imageUrl" value={form.imageUrl} onChange={onChange} placeholder="Image URL (optional)" />
+            <label className="admin-resource-file-picker">
+              <span className="profile-field-label">Upload Image</span>
+              <input type="file" accept="image/*" onChange={onImageFileChange} />
+              {imageFileName ? <span className="muted-text">Selected: {imageFileName}</span> : null}
+            </label>
+            <div className="admin-resource-image-tools">
+              <button type="button" className="secondary-btn" onClick={applyAutoImage}>Generate Image From Name</button>
+              <span className="muted-text">Admins can paste an image URL or generate an image from resource name/type.</span>
+            </div>
+            <div className="admin-resource-image-preview-wrap">
+              <img
+                className="admin-resource-image-preview"
+                src={form.imageUrl?.trim() ? form.imageUrl : buildResourceImageDataUrl(form.name, form.type)}
+                alt="Resource preview"
+              />
+            </div>
             <select className="text-input" name="type" value={form.type} onChange={onChange}>
               {typeOptions.map((type) => (
                 <option key={type} value={type}>{type}</option>
@@ -134,6 +192,7 @@ function AdminResourcesPage() {
             <textarea className="text-input" name="description" value={form.description} onChange={onChange} placeholder="Description" rows={4} required />
 
             {error ? <p className="error-text">{error}</p> : null}
+            {success ? <p className="success-text">{success}</p> : null}
 
             <div className="action-row">
               <button className="primary-btn" type="submit">{editingId ? 'Update Resource' : 'Create Resource'}</button>
@@ -157,9 +216,11 @@ function AdminResourcesPage() {
             <p>Loading...</p>
           ) : (
             <div className="admin-resource-list">
+              {resources.length === 0 ? <p className="muted-text">No resources found for the current search.</p> : null}
               {resources.map((resource) => (
                 <article key={resource.id} className="admin-resource-item">
                   <div>
+                    <img className="admin-resource-list-image" src={getResourceImageUrl(resource)} alt={resource.name} />
                     <h3>{resource.name}</h3>
                     <p>{resource.description}</p>
                     <small>{resource.location} | {resource.type} | Capacity: {resource.capacity}</small>
@@ -174,7 +235,7 @@ function AdminResourcesPage() {
           )}
         </section>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 
